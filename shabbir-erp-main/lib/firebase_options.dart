@@ -29,11 +29,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDWdJdmBUP0IyZQO7Wby0PmwL_WTiUrE4c',
-    appId: '1:1074455612183:android:4ba082940d5875dbdb0552',
-    messagingSenderId: '1074455612183',
-    projectId: 'shabbir-erp',
-    storageBucket: 'shabbir-erp.firebasestorage.app',
+    apiKey: 'AIzaSyBWZUec_0vrLOsIfPEIU68hQ7RwqTs1iz0',
+    appId: '1:533290517471:android:9839d8b3dab8204348ba6a',
+    messagingSenderId: '533290517471',
+    projectId: 'shabbirer-eca8d',
+    storageBucket: 'shabbirer-eca8d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

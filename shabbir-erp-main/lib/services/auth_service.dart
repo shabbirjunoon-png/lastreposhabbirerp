@@ -1,5 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
+
+const _webClientId =
+    '533290517471-nha8kqm8p92qb1dfpd81tajc7oqbgmmi.apps.googleusercontent.com';
 
 /// Safe wrapper around Firebase Auth.
 /// All methods are no-ops when Firebase is not initialised
@@ -22,7 +26,9 @@ class AuthService {
 
   GoogleSignIn? _safeGoogle() {
     try {
-      return GoogleSignIn();
+      return GoogleSignIn(
+        clientId: kIsWeb ? _webClientId : null,
+      );
     } catch (_) {
       return null;
     }
