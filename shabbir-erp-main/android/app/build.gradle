@@ -50,9 +50,18 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            storeFile file('shabbir_release.jks')
+            storePassword 'shabbir123'
+            keyAlias 'shabbirkey'
+            keyPassword 'shabbir123'
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
         }
