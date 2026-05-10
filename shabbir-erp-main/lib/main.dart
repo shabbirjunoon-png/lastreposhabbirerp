@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_config.dart';
 import 'constants/app_colors.dart';
 import 'firebase_options.dart';
@@ -91,11 +92,26 @@ class _AppRootState extends State<AppRoot> {
   }
 
   Future<void> _checkAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+
     // If Firebase never initialised, skip auth entirely — go straight to app.
     if (!firebaseReady) {
       setState(() {
         _isLoggedIn = true;
         _needsPattern = false;
+        _loading = false;
+      });
+      return;
+    }
+
+    // If user previously chose Offline Mode, restore that session.
+    final offlineSession = prefs.getBool('offline_logged_in') ?? false;
+    if (offlineSession) {
+      final patternEnabled = await SecurityService.instance.isPatternEnabled();
+      final hasPattern = await SecurityService.instance.hasPatternSet();
+      setState(() {
+        _isLoggedIn = true;
+        _needsPattern = patternEnabled && hasPattern;
         _loading = false;
       });
       return;
@@ -128,8 +144,16 @@ class _AppRootState extends State<AppRoot> {
   }
 
   void _onLogout() {
-    // If Firebase is not ready, logout is a no-op (just stay logged in).
-    if (!firebaseReady) return;
+    // Clear offline session flag so the user returns to the login screen.
+    SharedPreferences.getInstance().then((p) => p.remove('offline_logged_in'));
+    if (!firebaseReady) {
+      setState(() {
+        _isLoggedIn = false;
+        _needsPattern = false;
+        _loading = false;
+      });
+      return;
+    }
     setState(() {
       _isLoggedIn = false;
       _needsPattern = false;
