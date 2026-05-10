@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "533290517471",
-    "project_id": "shabbirer-eca8d",
-    "storage_bucket": "shabbirer-eca8d.firebasestorage.app"
+    "project_number": "705676661033",
+    "project_id": "shabbirserp",
+    "storage_bucket": "shabbirserp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:533290517471:android:9839d8b3dab8204348ba6a",
+        "mobilesdk_app_id": "1:705676661033:android:fa1c849f95305c0932a738",
         "android_client_info": {
           "package_name": "com.shabbir.erp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "533290517471-55bdguou7gha0ul34fl4estc9suga2n1.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.shabbir.erp",
-            "certificate_hash": "ca40537c645efda98200e353a4466576c4390e04"
-          }
-        },
-        {
-          "client_id": "533290517471-nha8kqm8p92qb1dfpd81tajc7oqbgmmi.apps.googleusercontent.com",
+          "client_id": "705676661033-kmj6dvesdpnhm8vojr338f5mq2f48cei.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBWZUec_0vrLOsIfPEIU68hQ7RwqTs1iz0"
+          "current_key": "AIzaSyAy9PBKHe2txPElQNV3Q-M7Mi0uVRIJBDc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "533290517471-nha8kqm8p92qb1dfpd81tajc7oqbgmmi.apps.googleusercontent.com",
+              "client_id": "705676661033-kmj6dvesdpnhm8vojr338f5mq2f48cei.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
