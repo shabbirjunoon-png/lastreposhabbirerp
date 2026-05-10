@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../app_config.dart';
 import '../constants/app_colors.dart';
 import '../services/auth_service.dart';
+import '../widgets/app_header.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLogin;
@@ -69,9 +70,16 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) widget.onLogin();
         },
         onFailed: (e) => setState(() {
-          _error = e.code == 'not-configured'
-              ? 'Firebase not set up yet — use Offline Mode below.'
-              : (e.message ?? 'Verification failed');
+          final code = e.code.toUpperCase();
+          final msg = (e.message ?? '').toUpperCase();
+          final isConfig = code.contains('CONFIGURATION') ||
+              code.contains('NOT_CONFIGURED') ||
+              msg.contains('CONFIGURATION') ||
+              msg.contains('NOT_CONFIGURED') ||
+              code == 'NOT-CONFIGURED';
+          _error = isConfig
+              ? 'Phone login not configured — use "Use Offline (No Login)" below.'
+              : (e.message ?? 'Verification failed. Please try again.');
           _loadingPhone = false;
         }),
         onCodeSent: (id, _) => setState(() {
@@ -85,8 +93,11 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
     } catch (e) {
+      final msg = e.toString().toUpperCase();
       setState(() {
-        _error = e.toString();
+        _error = (msg.contains('CONFIGURATION') || msg.contains('NOT_CONFIGURED'))
+            ? 'Phone login not configured — use "Use Offline (No Login)" below.'
+            : 'Failed to send OTP. Please try again.';
         _loadingPhone = false;
       });
     }
@@ -116,7 +127,19 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _useOfflineMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedName = prefs.getString('user_name') ?? '';
+
+    // If name already saved from a previous session, go straight in
+    if (savedName.isNotEmpty) {
+      await prefs.setBool('offline_logged_in', true);
+      widget.onLogin();
+      return;
+    }
+
+    // First time — ask for name
     final nameController = TextEditingController();
+    if (!mounted) return;
     final name = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
@@ -140,8 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isNotEmpty) Navigator.of(context).pop(name);
+              final n = nameController.text.trim();
+              if (n.isNotEmpty) Navigator.of(context).pop(n);
             },
             child: Text(
               'Continue',
@@ -152,8 +175,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
     if (name != null && name.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_name', name);
+      await prefs.setBool('offline_logged_in', true);
       widget.onLogin();
     }
   }
@@ -170,23 +193,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 40),
               // Logo
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Center(
-                  child: Text(
-                    'S',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 40,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
+              ShabbirLogo(
+                size: 72,
+                bgColor: AppColors.accent,
+                textColor: AppColors.primary,
+                badgeColor: AppColors.primary,
               ),
               const SizedBox(height: 24),
               Text(
