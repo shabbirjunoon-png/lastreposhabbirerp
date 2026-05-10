@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'database_service.dart';
+import 'web_download_stub.dart'
+    if (dart.library.html) 'web_download_html.dart';
+import 'native_backup_stub.dart'
+    if (dart.library.io) 'native_backup_impl.dart';
 
 class BackupService {
   static BackupService? _instance;
@@ -16,18 +20,13 @@ class BackupService {
 
   Future<void> backupToLocalStorage() async {
     final json = await DatabaseService.instance.exportToJson();
+    final bytes = utf8.encode(json);
     if (kIsWeb) {
-      _triggerWebDownload(utf8.encode(json), _backupFileName);
-      return;
+      triggerWebDownload(bytes, _backupFileName);
+    } else {
+      await nativeBackup(bytes, _backupFileName);
     }
-    await _backupNative(json);
   }
-
-  Future<void> _backupNative(String json) async {
-    throw UnsupportedError('Native backup not available in this environment');
-  }
-
-  Future<bool> localBackupExists() async => false;
 
   Future<void> restoreFromJson(String json) async {
     await DatabaseService.instance.importFromJson(json);
@@ -42,7 +41,4 @@ class BackupService {
   Future<void> restoreFromGoogleDrive() async {
     throw UnsupportedError('Google Drive restore requires native platform');
   }
-}
-
-void _triggerWebDownload(List<int> bytes, String filename) {
 }
