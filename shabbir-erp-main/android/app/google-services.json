@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074455612183",
+    "project_id": "shabbir-erp",
+    "storage_bucket": "shabbir-erp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074455612183:android:4ba082940d5875dbdb0552",
+        "android_client_info": {
+          "package_name": "com.shabbir.erp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWdJdmBUP0IyZQO7Wby0PmwL_WTiUrE4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
