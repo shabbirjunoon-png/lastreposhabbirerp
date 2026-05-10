@@ -92,6 +92,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _verifyOtp() async {
+    final otp = _otpController.text.trim();
+    if (otp.length < 6) {
+      setState(() => _error = 'Enter the 6-digit OTP');
+      return;
+    }
+    setState(() {
+      _loadingPhone = true;
+      _error = null;
+    });
+    try {
+      final result = await AuthService.instance.signInWithOtp(
+        verificationId: _verificationId,
+        otp: otp,
+      );
+      if (result != null && mounted) widget.onLogin();
+    } catch (e) {
+      setState(() => _error = 'Invalid OTP. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loadingPhone = false);
+    }
+  }
+
   Future<void> _useOfflineMode() async {
     final nameController = TextEditingController();
     final name = await showDialog<String>(
