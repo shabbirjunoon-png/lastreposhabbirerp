@@ -19,54 +19,52 @@ class PatternInput extends StatefulWidget {
 
 class _PatternInputState extends State<PatternInput> {
   final List<int> _selected = [];
-  final List<Offset> _points = [];
   Offset? _currentPoint;
   bool _complete = false;
+  Size _widgetSize = Size.zero;
 
+  static const double _hitRadius = 38.0;
   static const double _dotRadius = 12.0;
   static const double _activeDotRadius = 18.0;
 
-  List<GlobalKey> _keys = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _keys = List.generate(widget.gridSize * widget.gridSize, (_) => GlobalKey());
+  List<Offset> _getDotCenters(Size size) {
+    final n = widget.gridSize;
+    final cellW = size.width / n;
+    final cellH = size.height / n;
+    final centers = <Offset>[];
+    for (int r = 0; r < n; r++) {
+      for (int c = 0; c < n; c++) {
+        centers.add(Offset(cellW * c + cellW / 2, cellH * r + cellH / 2));
+      }
+    }
+    return centers;
   }
 
-  Offset? _getCenter(int index) {
-    final ctx = _keys[index].currentContext;
-    if (ctx == null) return null;
-    final box = ctx.findRenderObject() as RenderBox?;
-    if (box == null) return null;
-    final pos = box.localToGlobal(Offset.zero);
-    return pos + Offset(box.size.width / 2, box.size.height / 2);
-  }
-
-  void _onPanStart(DragStartDetails details) {
+  void _onPanStart(DragStartDetails d) {
     setState(() {
       _selected.clear();
-      _points.clear();
       _complete = false;
-      _currentPoint = details.globalPosition;
+      _currentPoint = d.localPosition;
     });
-    _checkHit(details.globalPosition);
+    _checkHit(d.localPosition);
   }
 
-  void _onPanUpdate(DragUpdateDetails details) {
+  void _onPanUpdate(DragUpdateDetails d) {
     if (_complete) return;
-    setState(() => _currentPoint = details.globalPosition);
-    _checkHit(details.globalPosition);
+    setState(() => _currentPoint = d.localPosition);
+    _checkHit(d.localPosition);
   }
 
-  void _onPanEnd(DragEndDetails details) {
+  void _onPanEnd(DragEndDetails _) {
     if (_selected.length >= 4) {
-      setState(() => _complete = true);
+      setState(() {
+        _complete = true;
+        _currentPoint = null;
+      });
       widget.onComplete(_selected.join('-'));
     } else {
       setState(() {
         _selected.clear();
-        _points.clear();
         _complete = false;
         _currentPoint = null;
       });
@@ -74,15 +72,13 @@ class _PatternInputState extends State<PatternInput> {
   }
 
   void _checkHit(Offset pos) {
-    for (int i = 0; i < widget.gridSize * widget.gridSize; i++) {
+    if (_widgetSize == Size.zero) return;
+    final centers = _getDotCenters(_widgetSize);
+    for (int i = 0; i < centers.length; i++) {
       if (_selected.contains(i)) continue;
-      final center = _getCenter(i);
-      if (center == null) continue;
-      if ((pos - center).distance < 30) {
-        setState(() {
-          _selected.add(i);
-          _points.add(center);
-        });
+      if ((pos - centers[i]).distance < _hitRadius) {
+        setState(() => _selected.add(i));
+        return;
       }
     }
   }
@@ -90,55 +86,67 @@ class _PatternInputState extends State<PatternInput> {
   @override
   Widget build(BuildContext context) {
     final color = widget.activeColor ?? AppColors.accent;
-    return GestureDetector(
-      onPanStart: _onPanStart,
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
-      child: CustomPaint(
-        painter: _PatternPainter(
-          points: _points,
-          currentPoint: _complete ? null : _currentPoint,
-          color: color,
-        ),
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: widget.gridSize,
-            mainAxisSpacing: 24,
-            crossAxisSpacing: 24,
-          ),
-          itemCount: widget.gridSize * widget.gridSize,
-          itemBuilder: (_, index) {
-            final active = _selected.contains(index);
-            return Center(
-              key: _keys[index],
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: active ? _activeDotRadius * 2 : _dotRadius * 2,
-                height: active ? _activeDotRadius * 2 : _dotRadius * 2,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: active ? color.withOpacity(0.2) : Colors.white.withOpacity(0.15),
-                  border: Border.all(
-                    color: active ? color : Colors.white.withOpacity(0.4),
-                    width: 2,
-                  ),
-                ),
-                child: active
-                    ? Center(
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                        ),
-                      )
-                    : null,
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxWidth);
+        _widgetSize = size;
+        final centers = _getDotCenters(size);
+        final selectedCenters = _selected.map((i) => centers[i]).toList();
+
+        return GestureDetector(
+          onPanStart: _onPanStart,
+          onPanUpdate: _onPanUpdate,
+          onPanEnd: _onPanEnd,
+          child: SizedBox(
+            width: size.width,
+            height: size.height,
+            child: CustomPaint(
+              painter: _PatternPainter(
+                points: selectedCenters,
+                currentPoint: _complete ? null : _currentPoint,
+                color: color,
               ),
-            );
-          },
-        ),
-      ),
+              child: Stack(
+                children: List.generate(widget.gridSize * widget.gridSize, (i) {
+                  final center = centers[i];
+                  final active = _selected.contains(i);
+                  final r = active ? _activeDotRadius : _dotRadius;
+                  return Positioned(
+                    left: center.dx - r,
+                    top: center.dy - r,
+                    width: r * 2,
+                    height: r * 2,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 120),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: active
+                            ? color.withOpacity(0.2)
+                            : Colors.white.withOpacity(0.15),
+                        border: Border.all(
+                          color: active ? color : Colors.white.withOpacity(0.4),
+                          width: 2,
+                        ),
+                      ),
+                      child: active
+                          ? Center(
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                    color: color, shape: BoxShape.circle),
+                              ),
+                            )
+                          : null,
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -148,13 +156,14 @@ class _PatternPainter extends CustomPainter {
   final Offset? currentPoint;
   final Color color;
 
-  _PatternPainter({required this.points, this.currentPoint, required this.color});
+  _PatternPainter(
+      {required this.points, this.currentPoint, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (points.isEmpty) return;
     final paint = Paint()
-      ..color = color.withOpacity(0.7)
+      ..color = color.withOpacity(0.65)
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
