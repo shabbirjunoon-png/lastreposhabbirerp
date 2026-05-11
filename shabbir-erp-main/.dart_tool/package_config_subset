@@ -66,6 +66,10 @@ file
 3.0
 file:///home/runner/.pub-cache/hosted/pub.dev/file-7.0.1/
 file:///home/runner/.pub-cache/hosted/pub.dev/file-7.0.1/lib/
+file_picker
+3.4
+file:///home/runner/.pub-cache/hosted/pub.dev/file_picker-8.3.7/
+file:///home/runner/.pub-cache/hosted/pub.dev/file_picker-8.3.7/lib/
 firebase_auth
 3.2
 file:///home/runner/.pub-cache/hosted/pub.dev/firebase_auth-5.7.0/
@@ -98,6 +102,10 @@ flutter_lints
 3.1
 file:///home/runner/.pub-cache/hosted/pub.dev/flutter_lints-4.0.0/
 file:///home/runner/.pub-cache/hosted/pub.dev/flutter_lints-4.0.0/lib/
+flutter_plugin_android_lifecycle
+3.7
+file:///home/runner/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.31/
+file:///home/runner/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.31/lib/
 google_fonts
 3.7
 file:///home/runner/.pub-cache/hosted/pub.dev/google_fonts-6.3.2/
