@@ -39,3 +39,8 @@ externalPort = 80
 deploymentTarget = "autoscale"
 run = ["python3", "shabbir-erp-main/serve.py"]
 build = ["bash", "-c", "cd shabbir-erp-main && flutter build web --release"]
+
+[userenv]
+
+[userenv.shared]
+GITHUB_REMOTE_URL = "https://github.com/shabbirjunoon-png/lastreposhabbirerp"
