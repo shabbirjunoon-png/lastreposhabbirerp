@@ -1,44 +1,35 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'database_service.dart';
-import 'web_download_stub.dart'
-    if (dart.library.html) 'web_download_html.dart';
-import 'native_backup_stub.dart'
-    if (dart.library.io) 'native_backup_impl.dart';
+  import 'package:flutter/foundation.dart' show kIsWeb;
+  import 'database_service.dart';
+  import 'web_download_stub.dart'
+      if (dart.library.html) 'web_download_html.dart';
+  import 'native_backup_stub.dart'
+      if (dart.library.io) 'native_backup_impl.dart';
+  import 'native_restore_stub.dart'
+      if (dart.library.io) 'native_restore_impl.dart';
 
-class BackupService {
-  static BackupService? _instance;
-  BackupService._();
-  static BackupService get instance {
-    _instance ??= BackupService._();
-    return _instance!;
-  }
+  class BackupService {
+    static BackupService? _instance;
+    BackupService._();
+    static BackupService get instance { _instance ??= BackupService._(); return _instance!; }
+    static const String _backupFileName = 'shabbir_erp_backup.json';
 
-  static const String _backupFileName = 'shabbir_erp_backup.json';
-
-  // ── Local Backup ──────────────────────────────────────────────────────────
-
-  Future<void> backupToLocalStorage() async {
-    final json = await DatabaseService.instance.exportToJson();
-    final bytes = utf8.encode(json);
-    if (kIsWeb) {
-      triggerWebDownload(bytes, _backupFileName);
-    } else {
-      await nativeBackup(bytes, _backupFileName);
+    Future<void> backupToLocalStorage() async {
+      final json = await DatabaseService.instance.exportToJson();
+      final bytes = utf8.encode(json);
+      if (kIsWeb) { triggerWebDownload(bytes, _backupFileName); } else { await nativeBackup(bytes, _backupFileName); }
     }
-  }
 
-  Future<void> restoreFromJson(String json) async {
-    await DatabaseService.instance.importFromJson(json);
-  }
+    Future<bool> restoreFromLocalFile() async {
+      if (kIsWeb) throw UnsupportedError('File pick not supported on web.');
+      final json = await nativePickAndReadFile();
+      if (json == null) return false;
+      await DatabaseService.instance.importFromJson(json);
+      return true;
+    }
 
-  // ── Google Drive Backup ───────────────────────────────────────────────────
-
-  Future<void> backupToGoogleDrive() async {
-    throw UnsupportedError('Google Drive backup requires native platform');
+    Future<void> restoreFromJson(String json) async { await DatabaseService.instance.importFromJson(json); }
+    Future<void> backupToGoogleDrive() async { throw UnsupportedError('Google Drive backup requires native platform'); }
+    Future<void> restoreFromGoogleDrive() async { throw UnsupportedError('Google Drive restore requires native platform'); }
   }
-
-  Future<void> restoreFromGoogleDrive() async {
-    throw UnsupportedError('Google Drive restore requires native platform');
-  }
-}
+  
